@@ -25,4 +25,16 @@ func main() {
 	fmt.Printf("Euro from USD: %.2f\n", euroFromUsd)
 	fmt.Printf("Rubles from USD: %.2f\n", rublesFromUsd)
 	fmt.Printf("Rubles from EUR: %.2f\n", rublesFromEur)
+
+	one,two := getMultiValues();
+
+	fmt.Printf("%.2f \n", one);
+	fmt.Printf("%.2f", two)
+}
+
+func getUserInput(sum int, currencyFrom string, currencyTo string) {
+}
+
+func getMultiValues() (float64, float64) {
+	return 1.6, 1.5
 }
