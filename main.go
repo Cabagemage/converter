@@ -3,30 +3,31 @@ package main
 import "fmt"
 
 func convertCurrency(amount float64, from string, to string, usdEurRate float64, usdRubRate float64) float64 {
-	switch from {
-	case "USD":
-		switch to {
-		case "EUR":
-			return amount / usdEurRate
-		case "RUB":
-			return amount * usdRubRate
-		}
-	case "EUR":
-		switch to {
-		case "USD":
-			return amount * usdEurRate
-		case "RUB":
-			return amount * usdEurRate * usdRubRate
-		}
-	case "RUB":
-		switch to {
-		case "USD":
-			return amount / usdRubRate
-		case "EUR":
-			return amount / usdRubRate / usdEurRate
-		}
+	operations := map[string]map[string]float64{
+		"USD": {
+			"EUR": amount / usdEurRate,
+			"RUB": amount * usdRubRate,
+		},
+		"EUR": {
+			"USD": amount * usdEurRate,
+			"RUB": amount * usdEurRate * usdRubRate,
+		},
+		"RUB": {
+			"USD": amount / usdRubRate,
+			"EUR": amount / usdRubRate / usdEurRate,
+		},
 	}
 
+	if from == to {
+		return amount
+	}
+ 
+	if fromOps, ok := operations[from]; ok {
+		if result, ok := fromOps[to]; ok {
+			return result
+		}
+	}
+ 
 	return amount
 }
 
