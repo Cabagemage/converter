@@ -2,43 +2,44 @@ package main
 
 import "fmt"
 
-func convertCurrency(amount float64, from string, to string, usdEurRate float64, usdRubRate float64) float64 {
-	operations := map[string]map[string]float64{
-		"USD": {
-			"EUR": amount / usdEurRate,
-			"RUB": amount * usdRubRate,
-		},
-		"EUR": {
-			"USD": amount * usdEurRate,
-			"RUB": amount * usdEurRate * usdRubRate,
-		},
-		"RUB": {
-			"USD": amount / usdRubRate,
-			"EUR": amount / usdRubRate / usdEurRate,
-		},
+func convertCurrency(from, to string, sum float64, operations *map[string]map[string]func(float64) float64) float64 {
+	if from == to {
+		return sum
 	}
 
-	if from == to {
-		return amount
-	}
- 
-	if fromOps, ok := operations[from]; ok {
-		if result, ok := fromOps[to]; ok {
-			return result
+	if fromOps, ok := (*operations)[from]; ok {
+		if converter, ok := fromOps[to]; ok {
+			return converter(sum)
 		}
 	}
- 
-	return amount
+
+	fmt.Printf("Конвертация из %s в %s не найдена — возвращаем исходную сумму\n", from, to)
+	return sum
 }
 
 func main() {
  	const usdEurRate = 1.07
 	const usdRubRate = 94.0
+	
+	operations := map[string]map[string]func(float64) float64{
+		"USD": {
+			"EUR": func(sum float64) float64 { return sum / usdEurRate },
+			"RUB": func(sum float64) float64 { return sum * usdRubRate },
+		},
+		"EUR": {
+			"USD": func(sum float64) float64 { return sum * usdEurRate },
+			"RUB": func(sum float64) float64 { return sum * usdEurRate * usdRubRate },
+		},
+		"RUB": {
+			"USD": func(sum float64) float64 { return sum / usdRubRate },
+			"EUR": func(sum float64) float64 { return sum / usdRubRate / usdEurRate },
+		},
+	}
 	for {
 	var currencyTo string
 	var currencyFrom string
 	var sum float64
-
+	
 	for {
 		value, ok := getCurrencyFromToValue(currencyTo)
 		if ok {
@@ -67,7 +68,7 @@ func main() {
 		fmt.Println("Попробуйте снова.")
 	}
 
-	value := convertCurrency(sum, currencyFrom, currencyTo, usdEurRate, usdRubRate)
+	value := convertCurrency(currencyFrom, currencyTo, sum, &operations)
 		fmt.Printf("Вы конвертируете %d из %s в %s\n", sum, currencyFrom, currencyTo)
 		fmt.Printf("Итоговый результат %f", value)
 	break
